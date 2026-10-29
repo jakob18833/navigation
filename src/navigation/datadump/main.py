@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """ ? Rebuild the GeoJSON and HTML reports of NAV_BOX SD-card logs.
 
     python log_parser.py                   # ? every log folder in logs/
@@ -14,9 +13,12 @@ import shutil
 import sys
 from pathlib import Path
 
-from src.geojson_export import build_gps_feature_collection, write_geojson
-from src.html_report import write_sensor_pages
-from src.parse_csv import parse_data_log
+from navigation.datadump.geojson_export import (
+    build_gps_feature_collection,
+    write_geojson,
+)
+from navigation.datadump.html_report import write_sensor_pages
+from navigation.datadump.parse_csv import parse_data_log
 
 LOGS_DIRECTORY = Path(__file__).resolve().parent / "logs"
 RAW_LOG_FILE_NAME = "DATA_LOG.csv"

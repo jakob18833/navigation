@@ -14,9 +14,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from string import Template
 
-from .parse_csv import IMU_PLAUSIBLE_VALUE_LIMITS
+from navigation.datadump.parse_csv import IMU_PLAUSIBLE_VALUE_LIMITS
 
-PAGE_TEMPLATE = Template(Path(__file__).with_name("page_template.html").read_text(encoding="utf-8"))
+PAGE_TEMPLATE = Template((Path(__file__).with_name("res") / "page_template.html").read_text(encoding="utf-8"))
 
 
 @dataclass(frozen=True)
