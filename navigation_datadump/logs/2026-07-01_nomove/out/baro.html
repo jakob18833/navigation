@@ -1,0 +1,137 @@
+<!doctype html>
+<!-- ? Shared skeleton of gps.html / imu.html / baro.html. html_report.py fills the four string.Template slots; any other dollar sign here breaks substitution. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-01_nomove · Barometer (BMP180)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root { --background: #f6f6f4; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b70; --border: #e1e1de; --accent: #2f6fde; }
+  @media (prefers-color-scheme: dark) {
+    :root { --background: #141416; --panel: #1c1c1f; --text: #ececef; --muted: #9a9aa2; --border: #2e2e33; --accent: #6ea0ff; }
+  }
+  body { margin: 0; background: var(--background); color: var(--text); font: 15px/1.4 system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; padding: 16px; border-bottom: 1px solid var(--border); }
+  header h1 { margin: 0; font-size: 18px; }
+  nav a { margin-right: 16px; color: var(--accent); text-decoration: none; }
+  nav a.current { color: var(--text); font-weight: 600; pointer-events: none; }
+  main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  .summary { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .panel { margin-bottom: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .chart { height: 380px; }
+  #map { height: 520px; }
+  .empty { margin: 0; padding: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header><h1>2026-07-01_nomove · Barometer (BMP180)</h1><nav><a href="gps.html">GPS</a><a href="imu.html">IMU</a><a href="baro.html" class="current">Barometer</a></nav></header>
+<main>
+  <p class="summary">96 samples · t = 1.8 … 99.4 s since power-on · median interval 1026 ms</p>
+  <div id="map-panel" class="panel" hidden><div id="map"></div></div>
+  <div id="charts"></div>
+</main>
+<script type="application/json" id="page-data">{"time_s":[1.764,2.789,3.817,4.842,5.87,6.904,7.929,8.954,9.979,11.006,12.036,13.072,14.1,15.125,16.15,17.175,18.2,19.228,20.256,21.282,22.309,23.336,24.361,25.387,26.412,27.439,28.475,29.5,30.526,31.554,32.579,33.616,34.643,35.668,36.695,37.723,38.751,39.776,40.806,41.832,42.858,43.885,44.91,45.942,46.967,47.993,49.018,50.046,51.072,52.099,53.124,54.155,55.182,56.211,57.237,58.262,59.29,60.316,61.352,62.378,63.404,64.435,65.461,66.493,67.524,68.549,69.577,70.605,71.639,72.664,73.692,74.717,75.742,76.767,77.795,78.827,79.852,80.877,81.902,82.93,83.965,84.991,86.016,87.042,88.067,89.092,90.118,91.16,92.187,93.215,94.244,95.27,96.295,97.337,98.37,99.395],"charts":[{"title":"Pressure","y_axis_title":"Pa","draw_as_steps":false,"series":[{"label":"pressure","values":[107834,97729,97738,97729,97730,117175,97726,97727,97724,117164,117167,97727,97726,97715,97729,97723,97724,97724,97715,97713,97715,97713,97718,97722,97722,97715,117135,97721,97722,97725,97725,97724,97719,97710,97716,97721,97719,97719,97709,97719,97721,97722,97718,117114,97715,97725,117112,97722,97721,97727,97718,117110,97716,97719,97717,97722,97713,117097,117096,97723,97719,117110,97716,117097,117099,97725,97722,97719,117097,117096,97716,97722,97716,97725,97723,117094,97726,97725,97725,97729,97720,97719,97723,97722,97710,97714,97717,97717,97720,97723,117059,97725,97717,97719,117055,97720]}]},{"title":"Temperature","y_axis_title":"\u00b0C","draw_as_steps":false,"series":[{"label":"temperature","values":[-682.0,1012.0,1011.0,1011.0,1011.0,-682.0,1011.0,1011.0,1011.0,-682.0,-682.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,-682.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,1011.0,290.0,-682.0,1011.0,1011.0,-682.0,1011.0,1011.0,1011.0,1011.0,-682.0,1011.0,1010.0,1010.0,1010.0,1010.0,-682.0,-682.0,1010.0,1010.0,-682.0,1011.0,-682.0,-682.0,1010.0,1010.0,1010.0,-682.0,-682.0,1010.0,1010.0,1010.0,1010.0,1010.0,-682.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,1010.0,-682.0,1010.0,1010.0,1010.0,-682.0,1010.0]}]}],"geojson":null}</script>
+<script>
+// ? Reads the embedded page data, then draws the optional map and one time chart per entry in pageData.charts.
+const pageData = JSON.parse(document.getElementById("page-data").textContent);
+const themeStyle = getComputedStyle(document.documentElement);
+const textColor = themeStyle.getPropertyValue("--text").trim();
+const gridColor = themeStyle.getPropertyValue("--border").trim();
+const seriesColors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b"];
+
+function describeFix(feature) {
+  const properties = feature.properties;
+  return "t = " + properties.time_since_power_on_s.toFixed(1) + " s since power-on<br>"
+    + "fix type " + properties.fix_type + ", " + properties.satellite_count + " satellites<br>"
+    + "altitude " + feature.geometry.coordinates[2].toFixed(1) + " m";
+}
+
+function drawMap(featureCollection) {
+  const mapPanel = document.getElementById("map-panel");
+  mapPanel.hidden = false;
+  if (!featureCollection.features.some(function (feature) { return feature.geometry.type === "Point"; })) {
+    mapPanel.innerHTML = '<p class="empty">No GPS position fix in this log, so there is no track to draw.</p>';
+    return;
+  }
+  // ? Esri base maps: street + satellite from one provider, no API key needed.
+  const streetLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Tiles &copy; Esri" });
+  const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Imagery &copy; Esri" });
+  const map = L.map("map", { layers: [streetLayer] });
+  L.control.layers({ "Map": streetLayer, "Satellite": satelliteLayer }).addTo(map);
+  const trackLayer = L.geoJSON(featureCollection, {
+    style: { color: "#2f6fde", weight: 3 },
+    pointToLayer: function (feature, latlng) {
+      // ? Green = 3D fix, orange = weaker fix (2D or dead reckoning).
+      const fixColor = feature.properties.fix_type === 3 ? "#10b981" : "#f59e0b";
+      return L.circleMarker(latlng, { radius: 3, weight: 1, color: fixColor, fillOpacity: 0.9 });
+    },
+    onEachFeature: function (feature, layer) {
+      if (feature.geometry.type === "Point") { layer.bindPopup(describeFix(feature)); }
+    }
+  }).addTo(map);
+  map.fitBounds(trackLayer.getBounds(), { padding: [24, 24] });
+}
+
+function drawCharts(charts, timeSeconds) {
+  const chartContainer = document.getElementById("charts");
+  if (timeSeconds.length === 0) {
+    chartContainer.innerHTML = '<div class="panel"><p class="empty">This sensor has no samples in the log.</p></div>';
+    return [];
+  }
+  return charts.map(function (chart) {
+    const panel = document.createElement("div");
+    const plotElement = document.createElement("div");
+    panel.className = "panel";
+    plotElement.className = "chart";
+    panel.appendChild(plotElement);
+    chartContainer.appendChild(panel);
+    const traces = chart.series.map(function (series) {
+      return { type: "scattergl", mode: "lines", name: series.label, x: timeSeconds, y: series.values,
+               line: { width: 1, shape: chart.draw_as_steps ? "hv" : "linear" } };
+    });
+    Plotly.newPlot(plotElement, traces, {
+      title: { text: chart.title },
+      colorway: seriesColors,
+      font: { color: textColor },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: { l: 64, r: 16, t: 48, b: 48 },
+      legend: { orientation: "h", y: 1.12, x: 1, xanchor: "right" },
+      xaxis: { title: { text: "time since power-on [s]" }, gridcolor: gridColor },
+      yaxis: { title: { text: chart.y_axis_title }, gridcolor: gridColor }
+    }, { responsive: true, displaylogo: false });
+    return plotElement;
+  });
+}
+
+// ? Zooming the time axis of one chart applies the same range to every other chart on the page.
+function linkTimeAxes(plotElements) {
+  let isSynchronizing = false;
+  plotElements.forEach(function (sourceElement) {
+    sourceElement.on("plotly_relayout", function (change) {
+      if (isSynchronizing) { return; }
+      let update = null;
+      if (change["xaxis.range[0]"] !== undefined) {
+        update = { "xaxis.range": [change["xaxis.range[0]"], change["xaxis.range[1]"]] };
+      } else if (change["xaxis.autorange"]) {
+        update = { "xaxis.autorange": true };
+      }
+      if (!update) { return; }
+      isSynchronizing = true;
+      Promise.all(plotElements.filter(function (element) { return element !== sourceElement; })
+        .map(function (element) { return Plotly.relayout(element, update); }))
+        .finally(function () { isSynchronizing = false; });
+    });
+  });
+}
+
+if (pageData.geojson) { drawMap(pageData.geojson); }
+linkTimeAxes(drawCharts(pageData.charts, pageData.time_s));
+</script>
+</body>
+</html>

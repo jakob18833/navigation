@@ -1,0 +1,137 @@
+<!doctype html>
+<!-- ? Shared skeleton of gps.html / imu.html / baro.html. html_report.py fills the four string.Template slots; any other dollar sign here breaks substitution. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026-07-01_spar · Barometer (BMP180)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root { --background: #f6f6f4; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b70; --border: #e1e1de; --accent: #2f6fde; }
+  @media (prefers-color-scheme: dark) {
+    :root { --background: #141416; --panel: #1c1c1f; --text: #ececef; --muted: #9a9aa2; --border: #2e2e33; --accent: #6ea0ff; }
+  }
+  body { margin: 0; background: var(--background); color: var(--text); font: 15px/1.4 system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; padding: 16px; border-bottom: 1px solid var(--border); }
+  header h1 { margin: 0; font-size: 18px; }
+  nav a { margin-right: 16px; color: var(--accent); text-decoration: none; }
+  nav a.current { color: var(--text); font-weight: 600; pointer-events: none; }
+  main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  .summary { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .panel { margin-bottom: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .chart { height: 380px; }
+  #map { height: 520px; }
+  .empty { margin: 0; padding: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header><h1>2026-07-01_spar · Barometer (BMP180)</h1><nav><a href="gps.html">GPS</a><a href="imu.html">IMU</a><a href="baro.html" class="current">Barometer</a></nav></header>
+<main>
+  <p class="summary">437 samples · t = 1.8 … 450.2 s since power-on · median interval 1026 ms</p>
+  <div id="map-panel" class="panel" hidden><div id="map"></div></div>
+  <div id="charts"></div>
+</main>
+<script type="application/json" id="page-data">{"time_s":[1.8,2.826,3.851,4.876,5.903,6.928,7.953,8.978,10.005,11.03,12.056,13.081,14.107,15.134,16.16,17.187,18.212,19.238,20.264,21.29,22.318,23.343,24.369,25.394,26.425,27.465,28.493,29.518,30.545,31.57,32.607,33.633,34.659,35.684,36.711,37.736,38.761,39.787,40.819,41.844,42.87,43.902,44.927,45.989,47.014,48.039,49.064,50.089,51.114,52.145,53.192,54.219,55.248,56.274,57.305,58.33,59.354,60.379,61.404,62.429,63.458,64.483,65.507,66.532,67.557,68.588,69.622,70.651,71.679,72.716,73.744,74.769,75.795,76.823,77.85,78.875,79.912,80.937,81.965,82.997,84.024,85.057,86.093,87.119,88.145,89.172,90.197,91.228,92.255,93.286,94.318,95.344,96.369,97.4,98.428,99.453,100.478,101.504,102.529,103.554,104.583,105.62,106.645,107.67,108.695,109.72,110.746,111.771,112.797,113.825,114.851,115.877,116.903,117.928,118.953,119.99,121.017,122.044,123.07,124.098,125.123,126.154,127.179,128.216,129.241,130.266,131.293,132.319,133.345,134.372,135.4,136.435,137.47,138.495,139.523,140.549,141.581,142.61,143.635,144.66,145.696,146.721,147.747,148.772,149.8,150.827,151.868,152.896,153.926,154.95,155.975,157.0,158.032,159.06,160.088,161.113,162.141,163.177,164.202,165.228,166.253,167.278,168.317,169.342,170.367,171.392,172.419,173.461,174.493,175.518,176.568,177.593,178.621,179.658,180.684,181.712,182.741,183.766,184.794,185.834,186.859,187.884,188.91,189.935,190.961,191.987,193.022,194.047,195.072,196.102,197.134,198.172,199.196,200.223,201.248,202.273,203.306,204.331,205.356,206.387,207.415,208.442,209.469,210.501,211.606,212.631,213.657,214.702,215.728,216.753,217.779,218.813,219.841,220.867,221.893,222.931,223.96,224.986,226.014,227.04,228.067,229.095,230.122,231.149,232.178,233.208,234.232,235.267,236.295,237.322,238.35,239.375,240.423,241.45,242.476,243.501,244.526,245.553,246.596,247.622,248.647,249.673,250.698,251.723,252.756,253.78,254.807,255.832,256.857,257.884,258.909,259.934,260.959,261.985,263.01,264.036,265.07,266.099,267.155,268.18,269.208,270.236,271.262,272.29,273.315,274.341,275.373,276.399,277.427,278.452,279.477,280.503,281.537,282.577,283.602,284.627,285.652,286.677,287.702,288.734,289.766,290.793,291.818,292.843,293.868,294.893,295.92,296.945,297.97,298.997,300.022,301.047,302.104,303.129,304.163,305.188,306.213,307.245,308.27,309.297,310.324,311.349,312.374,313.402,314.434,315.46,316.488,317.515,318.543,319.568,320.596,321.629,322.654,323.679,324.704,325.731,326.757,327.783,328.808,329.837,330.863,331.89,332.916,333.941,334.969,335.994,337.026,338.051,339.08,340.121,341.146,342.171,343.199,344.224,345.271,346.301,347.327,348.352,349.379,350.405,351.43,352.455,353.494,354.519,355.546,356.573,357.6,358.625,359.651,360.676,361.704,362.741,363.771,364.799,365.826,366.853,367.878,368.908,369.933,370.958,371.982,373.009,374.038,375.066,376.091,377.117,378.144,379.172,380.197,381.224,382.25,383.283,384.308,385.339,386.364,387.389,388.422,389.454,390.5,391.527,392.564,393.6,394.625,395.652,396.677,397.707,398.732,399.757,400.782,401.821,402.846,403.874,404.901,405.936,406.976,408.003,409.029,410.054,411.079,412.105,413.139,414.165,415.191,416.222,417.258,418.284,419.308,420.339,421.364,422.389,423.418,424.446,425.474,426.501,427.534,428.559,429.591,430.639,431.672,432.697,433.722,434.748,435.776,436.801,437.832,438.857,439.882,440.907,441.934,442.959,443.984,445.015,446.042,447.067,448.1,449.126,450.151],"charts":[{"title":"Pressure","y_axis_title":"Pa","draw_as_steps":false,"series":[{"label":"pressure","values":[97738,97737,97734,97737,97743,97735,97720,97738,97738,97741,97741,97735,97745,97735,97733,97738,97733,97733,97731,97737,97727,97728,97730,97739,116054,97731,116035,97728,97731,97730,97730,97729,97726,97732,97725,97722,97728,97731,97737,97734,97731,115992,97737,115995,97729,97726,97726,97726,97726,97727,97727,97726,115976,97726,115965,97733,115965,97733,97723,97736,115985,97751,115981,97747,97757,115979,97753,115970,97768,97750,97756,97759,97763,97762,97759,115956,97757,97763,97761,115944,97768,97768,97768,97766,97771,97768,97760,97768,97780,115923,115917,97784,97784,115912,97782,97785,115898,97781,97791,97790,97787,97790,97788,97794,97800,97791,97795,97803,97797,97794,115859,97789,97789,97789,97788,115836,97792,97792,97786,115825,97784,115818,97792,97778,97780,97784,97786,97775,115788,115791,97778,97769,97750,97760,97769,115772,115763,115765,97766,97758,115767,97763,115769,97747,115765,97749,97753,115760,97747,115748,97741,97741,115753,97741,97743,97746,97740,115725,97740,97743,97733,97730,97740,97741,97733,97733,97736,97729,115698,97732,115686,97726,115674,97726,97724,115672,97738,97739,115665,115665,97727,97724,97730,97728,97718,115639,115637,97716,97719,115623,115621,115623,115621,97709,97701,97704,115625,97704,97707,115626,97703,115603,97701,97707,97693,97695,97695,97694,97695,97688,97683,115607,97682,115598,97682,115602,115617,97677,97689,97690,97684,97681,97676,97688,115661,97682,115663,115656,97682,115672,97682,97678,97674,97698,97688,97685,97678,115679,115682,97687,97682,97687,97684,97675,97670,115665,97676,97664,97667,97668,97673,97676,97676,97678,97674,97682,97676,115682,97683,97678,97678,97686,97673,97673,97669,97675,97672,97672,97670,97677,97680,97686,97677,115694,97680,97675,97681,97686,97677,115688,97678,97676,97686,97680,97673,97684,97678,97675,97666,97673,97672,97666,115698,97669,97672,97675,97680,97680,97677,97675,97672,97676,97677,97686,115731,115713,97677,115705,97678,97670,97673,97669,97667,97667,97669,97663,97664,97672,97670,115718,97675,115723,115723,97673,115725,97677,97675,97673,97672,115736,97672,97672,115731,97676,97674,97674,97669,97675,97671,97668,97669,97669,97660,97661,97664,97667,97667,97663,115720,97672,97671,97669,97669,97672,97669,97672,97672,97674,97676,97665,115748,97679,115760,97689,97674,97675,97669,97669,97675,97674,97683,97671,97671,97671,97669,97668,115745,115757,115756,97689,97689,97686,97683,97682,97679,97682,97683,97675,97672,115740,97676,97680,97686,97679,115760,97677,97669,97675,97675,97676,97675,97680,97672,97680,97683,97677,115772,97680,97682,97685,115774,97675,97679,97676,97672,97682,115746,115743,97683,97686,97683,97688,97682,97688,115756,97685,97677,97675,97671,97683,97682,115772,97675,97682,115776,97682,97688]}]},{"title":"Temperature","y_axis_title":"\u00b0C","draw_as_steps":false,"series":[{"label":"temperature","values":[658.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,999.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,999.0,1000.0,999.0,999.0,999.0,999.0,999.0,999.0,999.0,-682.0,999.0,-682.0,999.0,999.0,999.0,999.0,999.0,999.0,316.0,999.0,999.0,999.0,999.0,999.0,999.0,999.0,-682.0,999.0,-682.0,999.0,999.0,998.0,998.0,998.0,998.0,998.0,998.0,-682.0,998.0,-682.0,998.0,-682.0,998.0,998.0,998.0,-682.0,999.0,-682.0,998.0,998.0,-682.0,998.0,-682.0,998.0,998.0,998.0,998.0,998.0,998.0,998.0,-682.0,998.0,998.0,998.0,-682.0,998.0,998.0,998.0,998.0,998.0,998.0,998.0,998.0,998.0,-682.0,-682.0,998.0,998.0,-682.0,998.0,998.0,-682.0,997.0,998.0,998.0,997.0,997.0,997.0,997.0,997.0,997.0,997.0,997.0,997.0,997.0,-682.0,997.0,997.0,997.0,997.0,-682.0,997.0,997.0,997.0,-682.0,997.0,-682.0,997.0,997.0,996.0,996.0,997.0,997.0,-682.0,-682.0,996.0,996.0,996.0,996.0,996.0,-682.0,-682.0,-682.0,996.0,996.0,-682.0,996.0,-682.0,996.0,-682.0,996.0,996.0,-682.0,996.0,-682.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,995.0,996.0,996.0,995.0,995.0,995.0,-682.0,995.0,-682.0,995.0,-682.0,995.0,995.0,-682.0,995.0,995.0,-682.0,-682.0,995.0,995.0,995.0,995.0,995.0,-682.0,-682.0,995.0,995.0,-682.0,-682.0,-682.0,-682.0,995.0,995.0,995.0,-682.0,995.0,995.0,-682.0,995.0,-682.0,994.0,994.0,995.0,994.0,994.0,994.0,994.0,994.0,994.0,-682.0,994.0,-682.0,994.0,-682.0,-682.0,995.0,994.0,995.0,995.0,995.0,995.0,995.0,-682.0,995.0,-682.0,-682.0,995.0,-682.0,-682.0,995.0,995.0,995.0,995.0,995.0,995.0,-682.0,-682.0,995.0,995.0,995.0,995.0,995.0,995.0,-682.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,-682.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,995.0,996.0,995.0,321.0,995.0,995.0,-682.0,995.0,995.0,995.0,995.0,995.0,-682.0,995.0,995.0,995.0,995.0,995.0,995.0,996.0,995.0,995.0,995.0,996.0,996.0,-682.0,995.0,995.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,-682.0,995.0,-682.0,996.0,996.0,995.0,995.0,995.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,996.0,-682.0,-682.0,996.0,-682.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,995.0,995.0,995.0,996.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,996.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,-682.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,996.0,-682.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,996.0,996.0,996.0,996.0,-682.0,996.0,996.0,-682.0,996.0,996.0]}]}],"geojson":null}</script>
+<script>
+// ? Reads the embedded page data, then draws the optional map and one time chart per entry in pageData.charts.
+const pageData = JSON.parse(document.getElementById("page-data").textContent);
+const themeStyle = getComputedStyle(document.documentElement);
+const textColor = themeStyle.getPropertyValue("--text").trim();
+const gridColor = themeStyle.getPropertyValue("--border").trim();
+const seriesColors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b"];
+
+function describeFix(feature) {
+  const properties = feature.properties;
+  return "t = " + properties.time_since_power_on_s.toFixed(1) + " s since power-on<br>"
+    + "fix type " + properties.fix_type + ", " + properties.satellite_count + " satellites<br>"
+    + "altitude " + feature.geometry.coordinates[2].toFixed(1) + " m";
+}
+
+function drawMap(featureCollection) {
+  const mapPanel = document.getElementById("map-panel");
+  mapPanel.hidden = false;
+  if (!featureCollection.features.some(function (feature) { return feature.geometry.type === "Point"; })) {
+    mapPanel.innerHTML = '<p class="empty">No GPS position fix in this log, so there is no track to draw.</p>';
+    return;
+  }
+  // ? Esri base maps: street + satellite from one provider, no API key needed.
+  const streetLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Tiles &copy; Esri" });
+  const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Imagery &copy; Esri" });
+  const map = L.map("map", { layers: [streetLayer] });
+  L.control.layers({ "Map": streetLayer, "Satellite": satelliteLayer }).addTo(map);
+  const trackLayer = L.geoJSON(featureCollection, {
+    style: { color: "#2f6fde", weight: 3 },
+    pointToLayer: function (feature, latlng) {
+      // ? Green = 3D fix, orange = weaker fix (2D or dead reckoning).
+      const fixColor = feature.properties.fix_type === 3 ? "#10b981" : "#f59e0b";
+      return L.circleMarker(latlng, { radius: 3, weight: 1, color: fixColor, fillOpacity: 0.9 });
+    },
+    onEachFeature: function (feature, layer) {
+      if (feature.geometry.type === "Point") { layer.bindPopup(describeFix(feature)); }
+    }
+  }).addTo(map);
+  map.fitBounds(trackLayer.getBounds(), { padding: [24, 24] });
+}
+
+function drawCharts(charts, timeSeconds) {
+  const chartContainer = document.getElementById("charts");
+  if (timeSeconds.length === 0) {
+    chartContainer.innerHTML = '<div class="panel"><p class="empty">This sensor has no samples in the log.</p></div>';
+    return [];
+  }
+  return charts.map(function (chart) {
+    const panel = document.createElement("div");
+    const plotElement = document.createElement("div");
+    panel.className = "panel";
+    plotElement.className = "chart";
+    panel.appendChild(plotElement);
+    chartContainer.appendChild(panel);
+    const traces = chart.series.map(function (series) {
+      return { type: "scattergl", mode: "lines", name: series.label, x: timeSeconds, y: series.values,
+               line: { width: 1, shape: chart.draw_as_steps ? "hv" : "linear" } };
+    });
+    Plotly.newPlot(plotElement, traces, {
+      title: { text: chart.title },
+      colorway: seriesColors,
+      font: { color: textColor },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: { l: 64, r: 16, t: 48, b: 48 },
+      legend: { orientation: "h", y: 1.12, x: 1, xanchor: "right" },
+      xaxis: { title: { text: "time since power-on [s]" }, gridcolor: gridColor },
+      yaxis: { title: { text: chart.y_axis_title }, gridcolor: gridColor }
+    }, { responsive: true, displaylogo: false });
+    return plotElement;
+  });
+}
+
+// ? Zooming the time axis of one chart applies the same range to every other chart on the page.
+function linkTimeAxes(plotElements) {
+  let isSynchronizing = false;
+  plotElements.forEach(function (sourceElement) {
+    sourceElement.on("plotly_relayout", function (change) {
+      if (isSynchronizing) { return; }
+      let update = null;
+      if (change["xaxis.range[0]"] !== undefined) {
+        update = { "xaxis.range": [change["xaxis.range[0]"], change["xaxis.range[1]"]] };
+      } else if (change["xaxis.autorange"]) {
+        update = { "xaxis.autorange": true };
+      }
+      if (!update) { return; }
+      isSynchronizing = true;
+      Promise.all(plotElements.filter(function (element) { return element !== sourceElement; })
+        .map(function (element) { return Plotly.relayout(element, update); }))
+        .finally(function () { isSynchronizing = false; });
+    });
+  });
+}
+
+if (pageData.geojson) { drawMap(pageData.geojson); }
+linkTimeAxes(drawCharts(pageData.charts, pageData.time_s));
+</script>
+</body>
+</html>

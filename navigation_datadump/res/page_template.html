@@ -1,0 +1,137 @@
+<!doctype html>
+<!-- ? Shared skeleton of gps.html / imu.html / baro.html. html_report.py fills the four string.Template slots; any other dollar sign here breaks substitution. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>$page_title</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root { --background: #f6f6f4; --panel: #ffffff; --text: #1d1d1f; --muted: #6b6b70; --border: #e1e1de; --accent: #2f6fde; }
+  @media (prefers-color-scheme: dark) {
+    :root { --background: #141416; --panel: #1c1c1f; --text: #ececef; --muted: #9a9aa2; --border: #2e2e33; --accent: #6ea0ff; }
+  }
+  body { margin: 0; background: var(--background); color: var(--text); font: 15px/1.4 system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; padding: 16px; border-bottom: 1px solid var(--border); }
+  header h1 { margin: 0; font-size: 18px; }
+  nav a { margin-right: 16px; color: var(--accent); text-decoration: none; }
+  nav a.current { color: var(--text); font-weight: 600; pointer-events: none; }
+  main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  .summary { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .panel { margin-bottom: 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .chart { height: 380px; }
+  #map { height: 520px; }
+  .empty { margin: 0; padding: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header><h1>$page_title</h1><nav>$navigation_links</nav></header>
+<main>
+  <p class="summary">$summary_text</p>
+  <div id="map-panel" class="panel" hidden><div id="map"></div></div>
+  <div id="charts"></div>
+</main>
+<script type="application/json" id="page-data">$page_data_json</script>
+<script>
+// ? Reads the embedded page data, then draws the optional map and one time chart per entry in pageData.charts.
+const pageData = JSON.parse(document.getElementById("page-data").textContent);
+const themeStyle = getComputedStyle(document.documentElement);
+const textColor = themeStyle.getPropertyValue("--text").trim();
+const gridColor = themeStyle.getPropertyValue("--border").trim();
+const seriesColors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b"];
+
+function describeFix(feature) {
+  const properties = feature.properties;
+  return "t = " + properties.time_since_power_on_s.toFixed(1) + " s since power-on<br>"
+    + "fix type " + properties.fix_type + ", " + properties.satellite_count + " satellites<br>"
+    + "altitude " + feature.geometry.coordinates[2].toFixed(1) + " m";
+}
+
+function drawMap(featureCollection) {
+  const mapPanel = document.getElementById("map-panel");
+  mapPanel.hidden = false;
+  if (!featureCollection.features.some(function (feature) { return feature.geometry.type === "Point"; })) {
+    mapPanel.innerHTML = '<p class="empty">No GPS position fix in this log, so there is no track to draw.</p>';
+    return;
+  }
+  // ? Esri base maps: street + satellite from one provider, no API key needed.
+  const streetLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Tiles &copy; Esri" });
+  const satelliteLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 19, attribution: "Imagery &copy; Esri" });
+  const map = L.map("map", { layers: [streetLayer] });
+  L.control.layers({ "Map": streetLayer, "Satellite": satelliteLayer }).addTo(map);
+  const trackLayer = L.geoJSON(featureCollection, {
+    style: { color: "#2f6fde", weight: 3 },
+    pointToLayer: function (feature, latlng) {
+      // ? Green = 3D fix, orange = weaker fix (2D or dead reckoning).
+      const fixColor = feature.properties.fix_type === 3 ? "#10b981" : "#f59e0b";
+      return L.circleMarker(latlng, { radius: 3, weight: 1, color: fixColor, fillOpacity: 0.9 });
+    },
+    onEachFeature: function (feature, layer) {
+      if (feature.geometry.type === "Point") { layer.bindPopup(describeFix(feature)); }
+    }
+  }).addTo(map);
+  map.fitBounds(trackLayer.getBounds(), { padding: [24, 24] });
+}
+
+function drawCharts(charts, timeSeconds) {
+  const chartContainer = document.getElementById("charts");
+  if (timeSeconds.length === 0) {
+    chartContainer.innerHTML = '<div class="panel"><p class="empty">This sensor has no samples in the log.</p></div>';
+    return [];
+  }
+  return charts.map(function (chart) {
+    const panel = document.createElement("div");
+    const plotElement = document.createElement("div");
+    panel.className = "panel";
+    plotElement.className = "chart";
+    panel.appendChild(plotElement);
+    chartContainer.appendChild(panel);
+    const traces = chart.series.map(function (series) {
+      return { type: "scattergl", mode: "lines", name: series.label, x: timeSeconds, y: series.values,
+               line: { width: 1, shape: chart.draw_as_steps ? "hv" : "linear" } };
+    });
+    Plotly.newPlot(plotElement, traces, {
+      title: { text: chart.title },
+      colorway: seriesColors,
+      font: { color: textColor },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      margin: { l: 64, r: 16, t: 48, b: 48 },
+      legend: { orientation: "h", y: 1.12, x: 1, xanchor: "right" },
+      xaxis: { title: { text: "time since power-on [s]" }, gridcolor: gridColor },
+      yaxis: { title: { text: chart.y_axis_title }, gridcolor: gridColor }
+    }, { responsive: true, displaylogo: false });
+    return plotElement;
+  });
+}
+
+// ? Zooming the time axis of one chart applies the same range to every other chart on the page.
+function linkTimeAxes(plotElements) {
+  let isSynchronizing = false;
+  plotElements.forEach(function (sourceElement) {
+    sourceElement.on("plotly_relayout", function (change) {
+      if (isSynchronizing) { return; }
+      let update = null;
+      if (change["xaxis.range[0]"] !== undefined) {
+        update = { "xaxis.range": [change["xaxis.range[0]"], change["xaxis.range[1]"]] };
+      } else if (change["xaxis.autorange"]) {
+        update = { "xaxis.autorange": true };
+      }
+      if (!update) { return; }
+      isSynchronizing = true;
+      Promise.all(plotElements.filter(function (element) { return element !== sourceElement; })
+        .map(function (element) { return Plotly.relayout(element, update); }))
+        .finally(function () { isSynchronizing = false; });
+    });
+  });
+}
+
+if (pageData.geojson) { drawMap(pageData.geojson); }
+linkTimeAxes(drawCharts(pageData.charts, pageData.time_s));
+</script>
+</body>
+</html>
