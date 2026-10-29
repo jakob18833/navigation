@@ -14,6 +14,7 @@ across sensors. Each table is therefore sorted by time_ms here.
 import json
 import math
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,10 +23,12 @@ POSITION_FIX_TYPES = frozenset({2, 3, 4})
 
 # ? Values outside these limits cannot come from the BNO055; they are I2C read errors
 # ? where bit 7 of one byte reads as 0 (e.g. +327.68 m/s^2, +2048 deg), see main.c.
+
+MAX_ACCEL = sys.float_info.max
 IMU_PLAUSIBLE_VALUE_LIMITS = {
-    "linear_accel_x_mps2": (-160.0, 160.0),  # ? ±16 g, the sensor's widest range
-    "linear_accel_y_mps2": (-160.0, 160.0),
-    "linear_accel_z_mps2": (-160.0, 160.0),
+    "linear_accel_x_mps2": (-MAX_ACCEL, MAX_ACCEL),  # ? ±10 g, the sensor's widest range
+    "linear_accel_y_mps2": (-MAX_ACCEL, MAX_ACCEL),
+    "linear_accel_z_mps2": (-MAX_ACCEL, MAX_ACCEL),
     "pitch_deg": (-180.0, 180.0),
     "roll_deg": (-180.0, 180.0),
     "yaw_deg": (0.0, 360.0),
@@ -77,6 +80,7 @@ def parse_data_log(log_path: Path):
     malformed_line_numbers: list[int] = []
 
     # 1. parse csv
+    print(log_path)
     with log_path.open(encoding="utf-8-sig", errors="replace", newline="") as log_file:
         for line_number, line in enumerate(log_file, start=1):
             fields = [field.strip() for field in line.split(",")]
@@ -160,6 +164,7 @@ def blank_impossible_imu_values(imu_rows: list[dict], drop=False) -> tuple[list[
 def _check_imu_row(imu) -> tuple[dict, bool]:
     for column_name, (lowest_value, highest_value) in IMU_PLAUSIBLE_VALUE_LIMITS.items():
         if not lowest_value <= imu[column_name] <= highest_value:
+            # print(imu, lowest_value, highest_value, column_name)
             for key in ("linear_accel_x_mps2", "linear_accel_y_mps2", "linear_accel_z_mps2", "pitch_deg", "roll_deg", "yaw_deg"):
                 imu[key] = None
             return imu, True
@@ -168,4 +173,4 @@ def _check_imu_row(imu) -> tuple[dict, bool]:
 
 
 if __name__ == "__main__":
-    parse_data_log(Path("logs/undated_1/DATA_LOG.csv"))
+    parse_data_log(Path("src/navigation/datadump/logs/undated_1/DATA_LOG.csv"))
