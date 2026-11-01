@@ -1,0 +1,170 @@
+from math import pi, sin, cos
+
+
+from direct.showbase.ShowBase import ShowBase
+
+from direct.task import Task
+
+from direct.actor.Actor import Actor
+
+from direct.interval.IntervalGlobal import Sequence
+
+from panda3d.core import Point3
+
+import json
+
+class MyApp(ShowBase):
+
+    def __init__(self):
+
+        ShowBase.__init__(self)
+
+
+        # Disable the camera trackball controls.
+
+        # self.disableMouse()
+
+
+        # Load the environment model.
+
+        # self.scene = self.loader.loadModel("models/environment")
+
+        # Reparent the model to render.
+
+        # self.scene.reparentTo(self.render)
+
+        # Apply scale and position transforms on the model.
+
+        # self.scene.setScale(0.25, 0.25, 0.25)
+
+        # self.scene.setPos(-8, 42, 0)
+
+
+        # Add the spinCameraTask procedure to the task manager.
+
+        self.taskMgr.add(self.spinCameraTask, "SpinCameraTask")
+
+
+        # Load and transform the panda actor.
+
+        self.pandaActor = Actor("models/panda-model",
+
+                                {"walk": "models/panda-walk4"})
+
+        self.pandaActor.setScale(0.005, 0.005, 0.005)
+
+        self.pandaActor.reparentTo(self.render)
+
+        # Loop its animation.
+
+        self.pandaActor.loop("walk")
+
+
+        # Create the four lerp intervals needed for the panda to
+
+        # walk back and forth.
+
+        with open("DATA_LOG.json", "r") as file:
+            data = json.load(file)
+
+        # "linear_accel_x_mps2": 0.0,
+        #     "linear_accel_y_mps2": -0.01,
+        #     "linear_accel_z_mps2": -0.31,
+        #     "pitch_deg": 0.25,
+        #     "roll_deg": -0.25,
+        #     "yaw_deg": 1.125,
+        #     "time_ms": 1781
+
+        intervals = []
+
+        startPos = Point3(0,0,0)
+        startHpr = Point3(0,0,0)
+
+        for row in data["I"]:
+            linear_accel_x_mps2 = row["linear_accel_x_mps2"]
+            linear_accel_y_mps2 = row["linear_accel_y_mps2"]
+            linear_accel_z_mps2 = row["linear_accel_z_mps2"]
+            pitch_deg           = row["pitch_deg"]
+            roll_deg            = row["roll_deg"]
+            yaw_deg             = row["yaw_deg"]
+            time_ms             = row["time_ms"]
+
+            try:
+                newPos = startPos + Point3(
+                    linear_accel_x_mps2,
+                    linear_accel_y_mps2,
+                    linear_accel_z_mps2
+                )
+
+                newHpr = Point3(
+                    pitch_deg,
+                    roll_deg,
+                    yaw_deg
+                )
+            except:
+                continue
+
+            intervals.append(
+                self.pandaActor.posInterval(time_ms / 2000.0, newPos, startPos=startPos)
+            )
+
+            intervals.append(
+                self.pandaActor.hprInterval(time_ms / 2000.0, newHpr, startHpr=newHpr)
+            )
+
+            startHpr = newHpr
+
+            startPos = newPos
+
+
+#         posInterval1 = self.pandaActor.posInterval(13,
+# 
+#                                                    Point3(0, -10, 0),
+# 
+#                                                    startPos=Point3(0, 10, 0))
+# 
+#         posInterval2 = self.pandaActor.posInterval(13,
+# 
+#                                                    Point3(0, 10, 0),
+# 
+#                                                    startPos=Point3(0, -10, 0))
+# 
+#         hprInterval1 = self.pandaActor.hprInterval(3,
+#                                                 #  rotate, roll, spin
+#                                                    Point3(0, 180, 0),
+# 
+#                                                    startHpr=Point3(0, 0, 0))
+# 
+#         hprInterval2 = self.pandaActor.hprInterval(3,
+# 
+#                                                    Point3(0, 180, 0),
+# 
+#                                                    startHpr=Point3(0, 180, 0))
+
+
+        # Create and play the sequence that coordinates the intervals.
+
+        self.pandaPace = Sequence(*intervals, name="pandaPace")
+
+        self.pandaPace.loop()
+
+
+    # Define a procedure to move the camera.
+
+    def spinCameraTask(self, task):
+
+        angleDegrees = task.time * 6.0
+
+        angleRadians = angleDegrees * (pi / 180.0)
+
+        self.camera.setPos(20 * sin(angleRadians), -20 * cos(angleRadians), 3)
+
+        self.camera.setHpr(angleDegrees, 0, 0)
+
+        return Task.cont
+
+
+
+app = MyApp()
+
+app.run()
