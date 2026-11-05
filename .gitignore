@@ -1,1 +1,3 @@
 .vexp/
+__pycache__/
+*.py[cod]
