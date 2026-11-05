@@ -1,6 +1,3 @@
 [submodule "NAV_BOX_tofNlnd"]
 	path = NAV_BOX_tofNlnd
 	url = https://github.com/Dabaridu/NAV_BOX_tofNlnd.git
-[submodule "nslpy"]
-	path = nslpy
-	url = git@git.noordunglabs.si:software/nslpy.git

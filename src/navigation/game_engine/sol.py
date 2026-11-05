@@ -1,19 +1,18 @@
 
 import json
+import math
 from pathlib import Path
 from statistics import median
-import math
 
-from direct.showbase.ShowBase import ShowBase
 from direct.actor.Actor import Actor
-from direct.interval.IntervalGlobal import Sequence, Parallel
+from direct.interval.IntervalGlobal import Parallel, Sequence
+from direct.showbase.ShowBase import ShowBase
 from panda3d.core import (
-    Point3,
-    LineSegs,
     AmbientLight,
     DirectionalLight,
+    LineSegs,
+    Point3,
 )
-
 
 
 def rotate_acceleration_to_world(ax, ay, az, yaw, pitch, roll):
