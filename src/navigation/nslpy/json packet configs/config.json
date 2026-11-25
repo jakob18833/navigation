@@ -1,0 +1,136 @@
+{
+	"addressOverride" : null,
+    "mockTypes" : {
+		"10": {
+            "name": "Position_GPS",
+            "fields": [
+                {   
+                    "name": "latitude",
+                    "type": "FLOAT"
+                },
+				
+                {
+                    "name": "longitude",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "altitude",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "fixType",
+                    "type": "INT"
+                },
+                {
+                    "name": "numSV",
+                    "type": "INT"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        }, 
+        "11": {
+            "name": "BNO055_payload_g",
+            "fields": [
+                {
+                    "name": "gx",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "gy",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "gz",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        },
+		"12": {
+			"name": "BNO055_payload_a",
+			"fields": [
+				{
+					"name": "ax",
+					"type": "DOUBLE"
+				},
+				{
+					"name": "ay",
+					"type": "DOUBLE"
+				},
+				{
+					"name": "az",
+					"type": "DOUBLE"
+				},
+				{
+					"name": "timestamp",
+					"type": "INT"
+				}
+			]
+		},
+		"13": {
+			"name": "BNO055_payload_m",
+			"fields": [
+				{
+					"name": "mx",
+					"type": "DOUBLE"
+				},
+				{
+					"name": "my",
+					"type": "DOUBLE"
+				},
+				{
+					"name": "mz",
+					"type": "DOUBLE"
+				},
+				{
+					"name": "timestamp",
+					"type": "INT"
+				}
+			]
+		},
+        "14": {
+            "name": "BMP_payload",
+            "fields": [
+                {
+                    "name": "temp",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "press",
+                    "type": "INT"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        },
+        "15": {
+            "name": "KF_payload",
+            "fields": [
+                {
+                    "name": "Xx_estimation",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "Xy_estimation",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "Xz_estimation",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,96 @@
+{
+    "address": "COM9",
+    "mockTypes" : {
+        "10": {
+            "name": "Position_GPS",
+            "fields": [
+                {   
+                    "name": "latitude",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "longitude",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "altitude",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "fixType",
+                    "type": "INT"
+                },
+                {
+                    "name": "numSV",
+                    "type": "INT"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        },
+        "11": {
+            "name": "BNO055_payload",
+            "fields": [
+                {
+                    "name": "vx",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "vy",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "vz",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "ax",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "ay",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "az",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "mx",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "my",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "mz",
+                    "type": "DOUBLE"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        },
+        "12": {
+            "name": "BMP_payload",
+            "fields": [
+                {
+                    "name": "temp",
+                    "type": "FLOAT"
+                },
+                {
+                    "name": "press",
+                    "type": "INT"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "INT"
+                }
+            ]
+        }
+    }
+}
